@@ -122,7 +122,7 @@ class HayDayParser {
       // Write queries to file
       const outputPath = 'cypher_queries.txt';
       await fs.writeFile(
-        outputPath, 
+        outputPath,
         allQueries.join(';\n\n') + ';',
         'utf8'
       );

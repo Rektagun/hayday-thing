@@ -5,37 +5,49 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
 const URI = "neo4j+s://afe81a2a.databases.neo4j.io";
 const USER = "neo4j";
 const PASSWORD = "VcKQNmXMCW3T2OR_-URhFumMDoFrQWxqnB1LkVfOHEc";
 let driver;
 
-app.post("/", async (req, res) => {
-  const user_level = req.body.value;
+app.get("/", async (req, res) => {
+  const user_level = req.query.value;
   try {
     driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
+
     const result = await driver.executeQuery(
-      `MATCH (n:Item) WHERE n.level <= ${user_level} RETURN DISTINCT n`,
+      `MATCH p=(n:Item)-[]->() WHERE n.level <= ${user_level} RETURN DISTINCT p`,
     );
 
-    const itemDetails = result.records.map((record) => {
-      const node = record.get("n");
-      return {
-        id: node.identity.low,
-        name: node.properties.name,
-        maxPrice: node.properties.maxPrice.low,
-        level: node.properties.level.low,
-        type: node.properties.type,
-        xp: node.properties.xp.low,
-        imageUrl: node.properties.imageUrl,
-      };
-    });
+    //const itemDetails = result.records.map((record) => {
+    //  const node = record.get("p");
+    //  return {
+    //    id: node.identity.low,
+    //    name: node.properties.name,
+    //    maxPrice: node.properties.maxPrice.low,
+    //    level: node.properties.level.low,
+    //    type: node.properties.type,
+    //    xp: node.properties.xp.low,
+    //    imageUrl: node.properties.imageUrl,
+    //  };
+    //});
 
     driver.close();
-    console.log(itemDetails);
-    res.json(itemDetails);
+
+    console.log(`User level received: ${user_level}`);
+    //console.log(itemDetails)
+
+    //TODO: uncomment the working things, and need to reiterate on the new
+    //result from the new query.
+
+    console.log(result.records);
+
+    //res.status(200).json(itemDetails)
+
   } catch (err) {
     console.log(`Connection error\n${err}\nCause: ${err.cause}`);
+    res.status(404);
   }
 });
 
