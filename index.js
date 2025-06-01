@@ -1,90 +1,80 @@
 const express = require("express");
 const neo4j = require("neo4j-driver");
 const cors = require("cors");
+const axios = require('axios').default;
 const app = express();
-
+require('dotenv').config()
 app.use(cors());
 app.use(express.json());
 
-const URI = "neo4j+s://afe81a2a.databases.neo4j.io";
-const USER = "neo4j";
-const PASSWORD = "VcKQNmXMCW3T2OR_-URhFumMDoFrQWxqnB1LkVfOHEc";
-let driver;
+// TODO: I need to get all the data from the database. (WHOLE_DATABASE)
+// TODO: Send that to the frontend.
+// TODO: Filter it based on the user's level. (user_level)
 
-app.get("/", async (req, res) => {
-  const user_level = req.query.value;
+
+let cachedData = null;
+const retrieveData = async () => {
+  const NEO4J_URI = process.env.NEO4J_URI
+  const NEO4J_USERNAME = process.env.NEO4J_USERNAME
+  const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD
+  let driver
+
   try {
-    driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
-
-    const result = await driver.executeQuery(
-      `MATCH p=(n:Item)-[]->() WHERE n.level <= ${user_level} RETURN DISTINCT p`,
-    );
-
-    //const itemDetails = result.records.map((record) => {
-    //  const node = record.get("p");
-    //  return {
-    //    id: node.identity.low,
-    //    name: node.properties.name,
-    //    maxPrice: node.properties.maxPrice.low,
-    //    level: node.properties.level.low,
-    //    type: node.properties.type,
-    //    xp: node.properties.xp.low,
-    //    imageUrl: node.properties.imageUrl,
-    //  };
-    //});
-
-    driver.close();
-
-    console.log(`User level received: ${user_level}`);
-    //console.log(itemDetails)
-
-    //TODO: uncomment the working things, and need to reiterate on the new
-    //result from the new query.
-
-    console.log(result.records);
-
-    //res.status(200).json(itemDetails)
-
+    driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USERNAME, NEO4J_PASSWORD))
+    const serverInfo = await driver.getServerInfo()
+    console.log('Connection established...')
+    console.log(serverInfo)
+    console.log('Getting data from database...')
+    cachedData = await driver.executeQuery('MATCH p=()-[]-() RETURN p;')
+    if (cachedData) {
+      console.log('Got data from database...', cachedData.records);
+    }
   } catch (err) {
-    console.log(`Connection error\n${err}\nCause: ${err.cause}`);
-    res.status(404);
+    console.log(`Connection error\n${err}\nCause: ${err.cause}`)
+  }
+}
+
+retrieveData();
+
+app.get('/api/data', (req, res) => {
+  if (cachedData) {
+    res.json(cachedData);
+  }
+  else {
+    console.log("Data not loaded yet.");
   }
 });
 
-// (async () => {
-//   const URI = "neo4j+s://afe81a2a.databases.neo4j.io";
-//   const USER = "neo4j";
-//   const PASSWORD = "VcKQNmXMCW3T2OR_-URhFumMDoFrQWxqnB1LkVfOHEc";
-//   let driver;
+// function getAllData() {
+//   const WHOLE_DATABASE = await driver.executeQuery(
+//     'MATCH p=()-[]-() RETURN p LIMIT 25;',
+//   )
+//   // const { records, summary, keys } = await driver.executeQuery(
+//   //   'MATCH p=()-[]-() RETURN p LIMIT 25;',
+//   // )
+// }
+
+// function getDataFromFrontend() {
 //   try {
-//     driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
-//     // console.log(await driver.executeQuery('MATCH (n) RETURN n LIMIT 1'));
-//     // driver.close();
+//     const result = await driver.executeQuery(
+//       `MATCH p=(n:Item)-[]->() WHERE n.level <= ${user_level} RETURN DISTINCT p`,
+//     );
+//     console.log(result);
 //   } catch (err) {
-//     console.log(`Connection error\n${err}\nCause: ${err.cause}`);
+//     console.log(`Connection error\n${err}\nCause: ${err.cause}`)
 //   }
-// })();
+// }
+
+
+
+// Summary information
+// console.log(
+//   WHOLE_DATABASE
+//   // `>> The query ${summary.query.text} ` +
+//   // `returned ${records.length} records ` +
+//   // `in ${summary.resultAvailableAfter} ms.`
+// )
 
 app.listen(3001, () => {
   console.log("Server running on port 3001");
 });
-
-// Variables:
-// 0. User's exp level in the game.
-//    - Only show those items.
-// 1. What items to fetch?
-//    - Some other info about it?
-
-// TODO [ RECIEVE DATA FROM FRONTEND ]
-// TODO [ FIGURE OUT HOW I'LL HANDLE TWO THINGS AT ONCE, THE SNED ING OF LEVEL
-// AND THE FETCHING OF DATA ]
-
-// TODO [ CLEAN DATA AND MAKE IT USEFULL ]
-
-// Que. What data to request?
-// Ans. Ask the user for items needed and then get back with that info.
-//    - Mostly everything in the database, but only required items.
-//    - Remove stupid things from the results.
-//    - Save that data nicely to send to the frontend.
-
-// TODO [ SEND DATA TO FRONTEND ]

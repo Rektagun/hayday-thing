@@ -1,6 +1,7 @@
 import "./output.css";
 import axios from "axios";
 import { useState } from "react";
+import ItemCard from "./comps/itemCard";
 
 function App() {
 
@@ -13,26 +14,18 @@ function App() {
     setUserLevel(e.target.value)
   }
 
-  async function sendLevel() {
-
-    try {
-      console.log(`User's level sent to backend: ${user_level}`);
-      setIsLoading(true);
-      const response = await axios.get('http://localhost:3001/', {
-        params: { value: user_level }
-      });
-      //console.log(response.data);
-      setItemsDetails((response.data).map(item => ({
-        ...item,
-        count: 0
-      })));
-      setIsLoading(false);
+  const getWholeDatabase = async () => {
+    const whole_Database = await axios.get('http://localhost:3001/api/data');
+    if (whole_Database) {
+      console.log("Got data from backend");
     }
-
-    catch (err) {
-      console.error(`Error while sending level to backend:`, err);
+    else {
+      setIsLoading(true)
     }
   }
+
+  getWholeDatabase();
+  const sendLevel = () => { };
 
   function addCount(id) {
     setItemsDetails(itemsDetails.map(item => {
@@ -46,7 +39,6 @@ function App() {
     }));
   };
 
-
   function calculate() {
     setNeededItems(itemsDetails.map(item => {
       return {
@@ -57,61 +49,22 @@ function App() {
     }))
   };
 
+  // HTML
+
   return (
 
     <div className="flex flex-col bg-slate-300">
       <h1 className="text-center text-4xl">HayDay Thing</h1>
 
-      <div className="flex flex-row" onSubmit={sendLevel}>
-
-        <h6>Please enter your level:</h6>
-
-        <input
-          value={user_level}
-          onChange={handleChange}
-          className="my-auto flex"
-          type="number"
-        />
-
-        <button className="my-auto flex" type="submit" onClick={sendLevel}>
-          DONE
-        </button>
-
-        <button className="my-auto flex" onClick={calculate}>
-          CALCULATE
-        </button>
-
-      </div>
       <div className="flex m-auto">
         {isLoading ? (
           <div>
-            Loading...
+            Loading database...
           </div>
         ) : (
           <></>
         )}
       </div>
-
-      <div className="flex flex-row flex-wrap bg-slate-700 text-black">
-        {itemsDetails && itemsDetails.map(item => (
-
-          <div key={item.id} className="flex flex-col m-auto">
-            <img className="size-16" src={item.imageUrl} alt="lll" />
-            <p>id: {item.id}</p>
-            <p>name: {item.name}</p>
-            <p>count: {item.count}</p>
-            <p>maxPrice: {item.maxPrice}</p>
-            <p>level: {item.level}</p>
-            <p>type: {item.type}</p>
-            <p>xp: {item.xp}</p>
-            <button onClick={() => addCount(item.id)}>
-              +
-            </button>
-          </div>
-
-        ))}
-      </div>
-
 
     </div>
   );

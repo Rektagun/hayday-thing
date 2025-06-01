@@ -16,10 +16,10 @@ const ItemCard = ({
       justify-between shadow-black shadow-sm hover:shadow-lg 
       hover:shadow-blue-900 group font-sans font-bold'>
 
-      <button className='rounded-xl m-1 border-0 bg-blue-100' 
-        onClick={incrementCount}> 
+      <button className='rounded-xl m-1 border-0 bg-blue-100'
+        onClick={incrementCount}>
 
-        <img className='size-16 self-center z-20 m-auto rounded-lg' 
+        <img className='size-16 self-center z-20 m-auto rounded-lg'
           src={icon_File} alt={name} />
       </button>
 
