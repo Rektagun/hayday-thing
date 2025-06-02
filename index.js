@@ -4,13 +4,13 @@ const cors = require("cors");
 const axios = require('axios').default;
 const app = express();
 require('dotenv').config()
+
 app.use(cors());
 app.use(express.json());
 
 // TODO: I need to get all the data from the database. (WHOLE_DATABASE)
 // TODO: Send that to the frontend.
 // TODO: Filter it based on the user's level. (user_level)
-
 
 let cachedData = null;
 const retrieveData = async () => {
@@ -25,9 +25,9 @@ const retrieveData = async () => {
     console.log('Connection established...')
     console.log(serverInfo)
     console.log('Getting data from database...')
-    cachedData = await driver.executeQuery('MATCH p=()-[]-() RETURN p;')
+    cachedData = await driver.executeQuery('MATCH allItems=()-[]-() RETURN allItems;')
     if (cachedData) {
-      console.log('Got data from database...', cachedData.records);
+      console.log('Got data from database...', cachedData);
     }
   } catch (err) {
     console.log(`Connection error\n${err}\nCause: ${err.cause}`)

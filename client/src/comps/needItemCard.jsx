@@ -17,10 +17,10 @@ const needItemCard = ({
       hover:shadow-blue-900 group font-sans font-bold'>
 
       <button className='rounded-xl m-1 hover:bg-green-100 
-        bg-green-200 border-green-500 border-2 active:bg-green-50' 
-        onClick={incrementCount}> 
+        bg-green-200 border-green-500 border-2 active:bg-green-50'
+        onClick={incrementCount}>
 
-        <img className='size-16 self-center z-20 m-auto rounded-lg' 
+        <img className='size-16 self-center z-20 m-auto rounded-lg'
           src={icon_File} alt={name} />
 
       </button>
